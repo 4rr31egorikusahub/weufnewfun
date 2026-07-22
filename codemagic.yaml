@@ -1,0 +1,31 @@
+workflows:
+  ios-custom-build:
+    name: Build Telegram iOS
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Fetch submodules
+        script: |
+          git submodule update --init --recursive
+      - name: Install dependencies & Bazel
+        script: |
+          brew install bazel
+      - name: Generate Xcode Project
+        script: |
+          python3 build-system/Make/Make.py \
+            --prebuilt-build-tools \
+            generateProject
+      - name: Build iOS App
+        script: |
+          xcodebuild -workspace Telegram.xcworkspace \
+                     -scheme Telegram \
+                     -sdk iphoneos \
+                     -configuration Release \
+                     CODE_SIGNING_ALLOWED=NO \
+                     build
+    artifacts:
+      - build/Release-iphoneos/*.app
+      - "*.ipa"
