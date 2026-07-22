@@ -20,8 +20,12 @@ workflows:
         script: |
           mkdir -p build-input
           mkdir -p $HOME/telegram-bazel-cache
+          
           # Жестко прописываем отключение расширений в конфиг Bazel
           echo "build --//Telegram:disableExtensions" >> .bazelrc
+          
+          # Скачиваем недостающий компонент Xcode для компиляции графики Metal
+          xcodebuild -downloadComponent MetalToolchain
 
       - name: Generate Local Provisioning & Build App
         script: |
@@ -35,7 +39,7 @@ workflows:
             --disableProvisioningProfiles \
             --disableExtensions
 
-          # 2. Сборка (теперь Bazel сам подхватит флаг из .bazelrc)
+          # 2. Сборка (Bazel сам подхватит флаг отключения расширений из .bazelrc)
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
