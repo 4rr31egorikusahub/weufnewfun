@@ -16,11 +16,11 @@ workflows:
       - name: Generate Xcode Project
         script: |
           python3 build-system/Make/Make.py \
+            --overrideXcodeVersion \
             generateProject \
             --configurationPath build-system/appstore-configuration.json \
             --xcodeManagedCodesigning \
-            --disableProvisioningProfiles \
-            --overrideXcodeVersion
+            --disableProvisioningProfiles
       - name: Build iOS App
         script: |
           xcodebuild -workspace Telegram.xcworkspace \
