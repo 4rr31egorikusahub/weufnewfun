@@ -10,14 +10,16 @@ workflows:
       - name: Fetch submodules
         script: |
           git submodule update --init --recursive
-      - name: Install dependencies & Bazel
+      - name: Install Bazel
         script: |
           brew install bazel
       - name: Generate Xcode Project
         script: |
           python3 build-system/Make/Make.py \
-            --prebuilt-build-tools \
-            generateProject
+            generateProject \
+            --configurationPath build-system/appstore-configuration.json \
+            --xcodeManagedCodesigning \
+            --disableProvisioningProfiles
       - name: Build iOS App
         script: |
           xcodebuild -workspace Telegram.xcworkspace \
@@ -25,6 +27,7 @@ workflows:
                      -sdk iphoneos \
                      -configuration Release \
                      CODE_SIGNING_ALLOWED=NO \
+                     CODE_SIGNING_REQUIRED=NO \
                      build
     artifacts:
       - build/Release-iphoneos/*.app
