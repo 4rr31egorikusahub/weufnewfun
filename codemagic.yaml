@@ -13,23 +13,13 @@ workflows:
       - name: Install Bazel
         script: |
           brew install bazel
-      - name: Generate Xcode Project
+      - name: Build iOS App with Bazel
         script: |
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
-            generateProject \
+            build \
             --configurationPath build-system/appstore-configuration.json \
-            --xcodeManagedCodesigning \
             --disableProvisioningProfiles
-      - name: Build iOS App
-        script: |
-          xcodebuild -workspace Telegram.xcworkspace \
-                     -scheme Telegram \
-                     -sdk iphoneos \
-                     -configuration Release \
-                     CODE_SIGNING_ALLOWED=NO \
-                     CODE_SIGNING_REQUIRED=NO \
-                     build
     artifacts:
-      - build/Release-iphoneos/*.app
-      - "*.ipa"
+      - build/artifacts/*.ipa
+      - build/artifacts/*.app
