@@ -6,8 +6,7 @@ workflows:
     environment:
       xcode: latest
       cocoapods: default
-    
-    # Кэшируем папки Bazel между сборками, чтобы повторные билды занимали пару минут
+
     cache:
       cache_paths:
         - $HOME/telegram-bazel-cache
@@ -19,12 +18,21 @@ workflows:
 
       - name: Prepare build environment
         script: |
-          # Создаем папку для загрузки бинарников Bazel и папку для кэша
           mkdir -p build-input
           mkdir -p $HOME/telegram-bazel-cache
 
-      - name: Build App with Bazel
+      - name: Generate Local Provisioning & Build App
         script: |
+          # 1. Генерируем локальную конфигурацию без обязательных профилей подписи
+          python3 build-system/Make/Make.py \
+            --overrideXcodeVersion \
+            --overrideBazelVersion \
+            generateProject \
+            --configurationPath build-system/appstore-configuration.json \
+            --xcodeManagedCodesigning \
+            --disableProvisioningProfiles
+
+          # 2. Запускаем сборку с использованием созданных заглушек
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
