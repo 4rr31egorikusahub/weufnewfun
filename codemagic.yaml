@@ -20,10 +20,12 @@ workflows:
         script: |
           mkdir -p build-input
           mkdir -p $HOME/telegram-bazel-cache
+          # Жестко прописываем отключение расширений в конфиг Bazel
+          echo "build --//Telegram:disableExtensions" >> .bazelrc
 
       - name: Generate Local Provisioning & Build App
         script: |
-          # 1. Генерация проекта (отключаем расширения)
+          # 1. Генерация проекта
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
@@ -33,12 +35,11 @@ workflows:
             --disableProvisioningProfiles \
             --disableExtensions
 
-          # 2. Сборка (добавлен знак "=" для корректной передачи аргументов)
+          # 2. Сборка (теперь Bazel сам подхватит флаг из .bazelrc)
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
             --cacheDir="$HOME/telegram-bazel-cache" \
-            --bazelArguments="--//Telegram:disableExtensions" \
             build \
             --buildNumber 1 \
             --configuration release_arm64 \
