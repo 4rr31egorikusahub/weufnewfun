@@ -18,7 +18,10 @@ workflows:
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             build \
+            --buildNumber 1 \
+            --configuration release_arm64 \
             --configurationPath build-system/appstore-configuration.json \
+            --xcodeManagedCodesigning \
             --disableProvisioningProfiles
     artifacts:
       - build/artifacts/*.ipa
