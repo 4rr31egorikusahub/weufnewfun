@@ -20,7 +20,7 @@ workflows:
             --configurationPath build-system/appstore-configuration.json \
             --xcodeManagedCodesigning \
             --disableProvisioningProfiles \
-            --overrideXcodeVersionCheck
+            --overrideXcodeVersion
       - name: Build iOS App
         script: |
           xcodebuild -workspace Telegram.xcworkspace \
