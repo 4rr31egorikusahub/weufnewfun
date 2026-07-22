@@ -23,7 +23,7 @@ workflows:
 
       - name: Generate Local Provisioning & Build App
         script: |
-          # 1. Генерируем конфиг, отключая требования профилей и все расширения
+          # 1. Генерация проекта (отключаем расширения через скрипт)
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
@@ -33,17 +33,17 @@ workflows:
             --disableProvisioningProfiles \
             --disableExtensions
 
-          # 2. Собираем только основной клиент, игнорируя расширения
+          # 2. Сборка (отключаем расширения напрямую через аргументы Bazel)
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
             --cacheDir="$HOME/telegram-bazel-cache" \
+            --bazelArguments "--//Telegram:disableExtensions" \
             build \
             --buildNumber 1 \
             --configuration release_arm64 \
             --configurationPath build-system/appstore-configuration.json \
-            --xcodeManagedCodesigning \
-            --disableExtensions
+            --xcodeManagedCodesigning
 
     artifacts:
       - bazel-bin/Telegram/Telegram.ipa
