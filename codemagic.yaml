@@ -21,25 +21,30 @@ workflows:
           mkdir -p build-input
           mkdir -p $HOME/telegram-bazel-cache
           
-          # Жестко прописываем отключение расширений в конфиг Bazel
+          # Отключение лишних расширений
           echo "build --//Telegram:disableExtensions" >> .bazelrc
           
           # Скачиваем недостающий компонент Xcode для компиляции графики Metal
           xcodebuild -downloadComponent MetalToolchain
+          
+          # Создаем фейковый скрипт подписи, который возвращает пустой JSON
+          echo '#!/bin/bash' > fake_codesign.sh
+          echo 'echo "{}"' >> fake_codesign.sh
+          chmod +x fake_codesign.sh
 
       - name: Generate Local Provisioning & Build App
         script: |
-          # 1. Генерация проекта
+          # 1. Генерация проекта (подсовываем пустой JSON подписи)
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
             generateProject \
             --configurationPath build-system/appstore-configuration.json \
-            --xcodeManagedCodesigning \
+            --codesigningInformationPath $PWD/fake_codesign.sh \
             --disableProvisioningProfiles \
             --disableExtensions
 
-          # 2. Сборка (Bazel сам подхватит флаг отключения расширений из .bazelrc)
+          # 2. Сборка (теперь Bazel соберет Ad-Hoc IPA без официальных сертификатов)
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
@@ -48,7 +53,7 @@ workflows:
             --buildNumber 1 \
             --configuration release_arm64 \
             --configurationPath build-system/appstore-configuration.json \
-            --xcodeManagedCodesigning
+            --codesigningInformationPath $PWD/fake_codesign.sh
 
     artifacts:
       - bazel-bin/Telegram/Telegram.ipa
