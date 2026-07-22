@@ -6,23 +6,35 @@ workflows:
     environment:
       xcode: latest
       cocoapods: default
+    
+    # Кэшируем папки Bazel между сборками, чтобы повторные билды занимали пару минут
+    cache:
+      cache_paths:
+        - $HOME/telegram-bazel-cache
+
     scripts:
       - name: Fetch submodules
         script: |
           git submodule update --init --recursive
-      - name: Install Bazel
+
+      - name: Prepare build environment
         script: |
-          brew install bazel
-      - name: Build iOS App with Bazel
+          # Создаем папку для загрузки бинарников Bazel и папку для кэша
+          mkdir -p build-input
+          mkdir -p $HOME/telegram-bazel-cache
+
+      - name: Build App with Bazel
         script: |
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
+            --overrideBazelVersion \
+            --cacheDir="$HOME/telegram-bazel-cache" \
             build \
             --buildNumber 1 \
             --configuration release_arm64 \
             --configurationPath build-system/appstore-configuration.json \
-            --xcodeManagedCodesigning \
-            --disableProvisioningProfiles
+            --xcodeManagedCodesigning
+
     artifacts:
-      - build/artifacts/*.ipa
-      - build/artifacts/*.app
+      - bazel-bin/Telegram/Telegram.ipa
+      - bazel-bin/Telegram/Telegram.app
