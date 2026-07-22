@@ -23,16 +23,17 @@ workflows:
 
       - name: Generate Local Provisioning & Build App
         script: |
-          # 1. Генерируем локальную конфигурацию без обязательных профилей подписи
+          # 1. Генерируем конфиг, отключая требования профилей и все расширения
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
             generateProject \
             --configurationPath build-system/appstore-configuration.json \
             --xcodeManagedCodesigning \
-            --disableProvisioningProfiles
+            --disableProvisioningProfiles \
+            --disableExtensions
 
-          # 2. Запускаем сборку с использованием созданных заглушек
+          # 2. Собираем только основной клиент, игнорируя расширения
           python3 build-system/Make/Make.py \
             --overrideXcodeVersion \
             --overrideBazelVersion \
@@ -41,7 +42,8 @@ workflows:
             --buildNumber 1 \
             --configuration release_arm64 \
             --configurationPath build-system/appstore-configuration.json \
-            --xcodeManagedCodesigning
+            --xcodeManagedCodesigning \
+            --disableExtensions
 
     artifacts:
       - bazel-bin/Telegram/Telegram.ipa
